@@ -1,0 +1,23 @@
+{
+  "name": "clouduboy-platforms",
+  "version": "1.0.0",
+  "description": "Supported target platforms of the Clouduboy Compiler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flaki/clouduboy-platforms.git"
+  },
+  "keywords": [
+    "clouduboy",
+    "microcanvas"
+  ],
+  "author": "Flaki (https://twitter.com/slsoftworks)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/flaki/clouduboy-platforms/issues"
+  },
+  "homepage": "https://github.com/flaki/clouduboy-platforms#readme"
+}
