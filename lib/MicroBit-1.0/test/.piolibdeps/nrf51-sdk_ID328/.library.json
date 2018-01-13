@@ -1,0 +1,46 @@
+{
+    "description": "Module to contain files provided by the nordic nRF51 SDK", 
+    "repository": {
+        "url": "https://github.com/ARMmbed/nrf51-sdk", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "atmelsam", 
+        "freescalekinetis", 
+        "nordicnrf51", 
+        "nxplpc", 
+        "siliconlabsefm32", 
+        "ststm32", 
+        "teensy"
+    ], 
+    "dependencies": null, 
+    "export": {
+        "exclude": [
+            "tests", 
+            "test", 
+            "*.doxyfile", 
+            "*.pdf"
+        ]
+    }, 
+    "authors": [
+        {
+            "maintainer": false, 
+            "name": "ARM mbed", 
+            "url": "https://github.com/ARMmbed", 
+            "email": null
+        }
+    ], 
+    "keywords": [
+        "nrf51", 
+        "nordic", 
+        "sdk"
+    ], 
+    "id": 328, 
+    "name": "nrf51-sdk", 
+    "license": "nordic", 
+    "frameworks": [
+        "mbed"
+    ], 
+    "version": "2.4.0", 
+    "homepage": null
+}

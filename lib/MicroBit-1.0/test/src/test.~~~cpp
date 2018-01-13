@@ -1,0 +1,52 @@
+#include "MicroBit.h"
+#include "MicroBitSamples.h"
+
+#include "mbed.h"
+#include "Adafruit_SSD1306.h"
+
+
+MicroBit uBit;
+
+
+class SPIPreInit : public SPI
+{
+public:
+    SPIPreInit(PinName mosi, PinName miso, PinName clk) : SPI(mosi,miso,clk)
+    {
+        format(8,3);
+        frequency(2000000);
+    };
+};
+
+SPIPreInit gSpi(MISO, NC, SCK);
+Adafruit_SSD1306_Spi gOled1(gSpi,MICROBIT_PIN_P16, MICROBIT_PIN_P14, NC);
+
+DigitalOut myled(LED1);
+
+
+
+int main()
+{
+    // Initialise the micro:bit runtime.
+    uBit.init();
+    uBit.display.image.setPixelValue(2, 2, 96);
+
+    //
+    // Periodically read the accelerometer x and y values, and plot a
+    // scaled version of this ont the display.
+    //
+    while(1)
+    {
+        gOled1.printf("%ux%u OLED Display", gOled1.width(), gOled1.height());
+        gOled1.display();
+
+        int x = (uBit.accelerometer.getX()+1024)/512;
+        int y = (uBit.accelerometer.getY()+1024)/512;
+
+        uBit.display.image.clear();
+        uBit.display.image.setPixelValue(x, y, 255);
+        uBit.display.image.setPixelValue(2, 2, 96);
+
+        uBit.sleep(100);
+    }
+}
