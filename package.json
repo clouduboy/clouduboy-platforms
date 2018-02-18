@@ -4,6 +4,8 @@
   "description": "Supported target platforms of the Clouduboy Compiler",
   "main": "index.js",
   "scripts": {
+    "postinstall": "node install.js",
+    "build:arduboy": "platformio run -d lib/Arduboy-1.1.1 -v --disable-auto-clean",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -12,12 +14,17 @@
   },
   "keywords": [
     "clouduboy",
-    "microcanvas"
+    "microcanvas""author": "Flaki (https://twitter.com/slsoftworks)",
   ],
-  "author": "Flaki (https://twitter.com/slsoftworks)",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "author": "István Szmozsánszky 'Flaki' <clouduboy@flaki.hu> (https://clouduboy.org)",
   "bugs": {
     "url": "https://github.com/flaki/clouduboy-platforms/issues"
   },
-  "homepage": "https://github.com/flaki/clouduboy-platforms#readme"
+  "homepage": "https://github.com/flaki/clouduboy-platforms#readme",
+  "dependencies": {
+    "fs-extra": "^5.0.0",
+    "node-fetch": "^2.0.0",
+    "tar": "^4.3.3"
+  }
 }
