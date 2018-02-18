@@ -10,18 +10,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flaki/clouduboy-platforms.git"
+    "url": "git+https://github.com/clouduboy/clouduboy-platforms.git"
   },
   "keywords": [
     "clouduboy",
-    "microcanvas""author": "Flaki (https://twitter.com/slsoftworks)",
+    "microcanvas"
   ],
+  "author": "Flaki (https://twitter.com/slsoftworks)",
   "license": "Apache-2.0",
-  "author": "István Szmozsánszky 'Flaki' <clouduboy@flaki.hu> (https://clouduboy.org)",
+  "author": "István Szmozsánszky 'Flaki' <clouduboy@clouduboy.hu> (https://clouduboy.org)",
   "bugs": {
-    "url": "https://github.com/flaki/clouduboy-platforms/issues"
+    "url": "https://github.com/clouduboy/clouduboy-platforms/issues"
   },
-  "homepage": "https://github.com/flaki/clouduboy-platforms#readme",
+  "homepage": "https://github.com/clouduboy/clouduboy-platforms#readme",
   "dependencies": {
     "fs-extra": "^5.0.0",
     "node-fetch": "^2.0.0",
