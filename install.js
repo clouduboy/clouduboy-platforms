@@ -1,10 +1,4 @@
-const sources = [
-  {
-    lib: 'Arduboy-1.1.1',
-    target: 'arduboy',
-    tarballs: [ 'https://github.com/Arduboy/Arduboy/tarball/1.1.1' ]
-  }
-]
+const sources = require('./targets.json')
 
 const fs = require('fs-extra')
 const fetch = require('node-fetch')

@@ -1,0 +1,8 @@
+[
+  {
+    "lib": "Arduboy-1.1.1",
+    "target": "arduboy",
+    "binpath": ".pioenvs/leonardo/firmware.hex",
+    "tarballs": [ "https://github.com/Arduboy/Arduboy/tarball/1.1.1" ]
+  }
+]
