@@ -27,6 +27,7 @@ function cmdPioCompile(projectDir) { return `${PIO_BIN} run --disable-auto-clean
 module.exports = {
   compile: (src, target) => {
     let ext = path.extname(src)
+    src = path.resolve(src)
 
     // It's a folder
     if (!ext) {
@@ -35,7 +36,7 @@ module.exports = {
       console.log('src: ', src)
 
     // It's a file
-  } else if (ext === 'ino') {
+  } else if (ext === '.ino') {
     // TODO: copy to tempdir
     console.log(src);
   } else {
@@ -118,6 +119,7 @@ function pioCompile(src, target) {
 // - `src` folder with `ino` should already exist
 // - Run `platformio run`
 function prepareTargetDir(dir, target) {
+  console.log(targets, target)
   const t = targets.get(target)
 
   return Promise.all([

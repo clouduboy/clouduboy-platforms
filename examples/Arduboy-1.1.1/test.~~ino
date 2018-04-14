@@ -1,0 +1,93 @@
+#include <SPI.h>
+#include <EEPROM.h>
+
+#include <avr/pgmspace.h>
+
+#include <Arduboy.h>
+
+Arduboy arduboy;
+
+// frame counter, 2-byte unsigned int, max 65536
+unsigned int _microcanvas_frame_counter = 0;
+
+PROGMEM const unsigned char gfx[] = {
+  /*9x8*/ 0x28, 0x10, 0xba, 0x6a, 0x3f, 0x6a, 0xba, 0x10, 0x28 };
+
+
+unsigned long time;
+char textbuffer[32];
+
+void setup() {
+  arduboy.begin();
+}
+
+void loop() {
+  if (!arduboy.nextFrame()) return;
+
+  int x, dir;
+  int t, b, c, d;
+  _microcanvas_frame_counter++;
+
+  b = 0;
+  c = 128-9;
+  d = 60*12;
+  t = _microcanvas_frame_counter % d;
+  dir = (_microcanvas_frame_counter/d) % 2;
+
+  arduboy.clear();
+  arduboy.setCursor(0,40);
+
+  time = micros();
+  //  for (int i=0; i<1; i++) {
+      x = ease1(0, t,b,c,d);
+  //  }
+  time = micros() - time;
+
+  if (dir) {
+    arduboy.drawBitmap(128-9-x,0, gfx, 9,8, WHITE);
+  } else {
+    arduboy.drawBitmap(x,0, gfx, 9,8, WHITE);
+  }
+
+  sprintf(textbuffer, "%4lu ", time);
+  arduboy.print(textbuffer);
+
+
+
+//  time = micros();
+//    for (int i=0; i<1; i++) {
+//      x = ease2(0, t,b,c,d);
+//    }
+//  time = micros() - time;
+
+  if (dir) {
+    arduboy.drawBitmap(128-9-x,10, gfx, 9,8, WHITE);
+  } else {
+    arduboy.drawBitmap(x,10, gfx, 9,8, WHITE);
+  }
+
+  sprintf(textbuffer, "%4lu ", time);
+  arduboy.print(textbuffer);
+
+
+
+  arduboy.setCursor(0,54);
+  sprintf(textbuffer, "t:%d  x:%d", arduboy.cpuLoad(), x);
+  arduboy.print(textbuffer);
+
+  arduboy.display();
+}
+
+int ease1(int x, int t, int b, int c, int d) {
+  float f = (float)t/d;
+
+  ////// FUNCTION BODY //////
+  //return (c * t /= d * t * t + b);
+  return (int)(c * f * f * f + b);
+}
+
+int ease2(int x, int t, int b, int c, int d) {
+  int timescale = t>32 ? 1 : 0xffff/t/t/t;
+
+  return timescale * t/d*t/d*t/d * c / timescale;
+}

@@ -1,0 +1,227 @@
+#include <SPI.h>
+#include <EEPROM.h>
+
+#include <avr/pgmspace.h>
+
+#include <Arduboy.h>
+
+Arduboy arduboy;
+
+// frame counter, 2-byte unsigned int, max 65536
+unsigned int _microcanvas_frame_counter = 0;
+
+// sprintf() textbuffer for drawText
+char _microcanvas_textbuffer[32];
+
+// global state machine
+unsigned int _microcanvas_state;
+
+PROGMEM const unsigned char gfx_interceptor[] = {
+  /*6x4x2*/ 0x06, 0x04, 0x0c, 0x06, 0x04, 0x04, 0x04, 0x04, 0x06, 0x0c, 0x04, 0x06 };
+PROGMEM const unsigned char gfx_title[] = {
+  /*30x4*/ 0x0f, 0x09, 0x09, 0x0d, 0x00, 0x0a, 0x0e, 0x0c, 0x00, 0x07, 0x08, 0x00, 0x0a, 0x0e, 0x0c, 0x00, 0x0e, 0x0a, 0x0a, 0x00, 0x02, 0x07, 0x0a, 0x00, 0x0e, 0x00, 0x0e, 0x0a, 0x0a, 0x00 };
+PROGMEM const unsigned char gfx_avatar_val[] = {
+  /*11x4*/ 0x07, 0x08, 0x07, 0x00, 0x0a, 0x0e, 0x0c, 0x00, 0x07, 0x08, 0x00 };
+PROGMEM const unsigned char gfx_avatar_ola[] = {
+  /*11x4*/ 0x06, 0x09, 0x09, 0x06, 0x00, 0x07, 0x08, 0x00, 0x0a, 0x0e, 0x0c };
+PROGMEM const unsigned char gfx_avatar_ash[] = {
+  /*12x4*/ 0x0e, 0x05, 0x05, 0x0e, 0x00, 0x08, 0x0e, 0x02, 0x00, 0x0f, 0x02, 0x0c };
+PROGMEM const unsigned char gfx_ship[] = {
+  /*20x8*/ 0x81, 0x4f, 0x6e, 0x7c, 0x38, 0x3c, 0x3e, 0x3a, 0x1a, 0x18, 0x1c, 0x1c, 0x1a, 0x1a, 0x1a, 0x0c, 0x0c, 0x08, 0x08, 0x00 };
+
+
+const byte GFX_INTERCEPTOR_WIDTH = 6;
+const byte GFX_INTERCEPTOR_HEIGHT = 4;
+const byte GFX_INTERCEPTOR_FRAMES = 2;
+const byte GFX_INTERCEPTOR_FRAMESIZE = 6;
+const byte GFX_TITLE_WIDTH = 30;
+const byte GFX_TITLE_HEIGHT = 4;
+const byte GFX_TITLE_FRAMES = 0;
+const byte GFX_TITLE_FRAMESIZE = 30;
+const byte GFX_AVATAR_VAL_WIDTH = 11;
+const byte GFX_AVATAR_VAL_HEIGHT = 4;
+const byte GFX_AVATAR_VAL_FRAMES = 0;
+const byte GFX_AVATAR_VAL_FRAMESIZE = 11;
+const byte GFX_AVATAR_OLA_WIDTH = 11;
+const byte GFX_AVATAR_OLA_HEIGHT = 4;
+const byte GFX_AVATAR_OLA_FRAMES = 0;
+const byte GFX_AVATAR_OLA_FRAMESIZE = 11;
+const byte GFX_AVATAR_ASH_WIDTH = 12;
+const byte GFX_AVATAR_ASH_HEIGHT = 4;
+const byte GFX_AVATAR_ASH_FRAMES = 0;
+const byte GFX_AVATAR_ASH_FRAMESIZE = 12;
+const byte GFX_SHIP_WIDTH = 20;
+const byte GFX_SHIP_HEIGHT = 8;
+const byte GFX_SHIP_FRAMES = 1;
+const byte GFX_SHIP_FRAMESIZE = 20;
+
+int ix;
+
+void intro_scene() {
+////// FUNCTION BODY //////
+__translateLib("game.animate([
+    { height: 0 },
+    { height: game.height/2 },
+    { height: 0 },
+  ], { duration: '.2s', id: 'Glow' })");
+if ((__translateLib("game.animation('Glow')")).__lookup("Identifier>MemberExpression>IfStatement>BlockStatement>FunctionDeclaration>remaining")) {
+  int h = (__translateLib("game.animation('Glow')")).__lookup("Identifier>MemberExpression>VariableDeclarator>VariableDeclaration>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>height");
+  arduboy.fillRect( (WIDTH / 2 - h * 2), (HEIGHT / 2 - h), h * 4, h * 2, WHITE );
+} else {
+  {
+arduboy.setCursor( ((WIDTH / 2 | 0 - 30) + 1), HEIGHT / 3 | 0 );
+arduboy.print( "Fronteers X" );
+};
+  {
+arduboy.setCursor( (WIDTH / 2 | 0 - 30), HEIGHT / 3 | 0 );
+arduboy.print( "Fronteers X" );
+};
+  arduboy.drawBitmap( (WIDTH / 2 | 0 - 30), (HEIGHT / 3 | 0 - 5), gfx_title, GFX_TITLE_WIDTH, GFX_TITLE_HEIGHT, WHITE );
+  ix = (ix + 1);
+  if (ix > WIDTH) ix = -GFX_INTERCEPTOR_WIDTH;
+  arduboy.drawBitmap( ix, (HEIGHT / 3 - 10), gfx_interceptor + GFX_INTERCEPTOR_FRAMESIZE*(0), GFX_INTERCEPTOR_WIDTH, GFX_INTERCEPTOR_HEIGHT, WHITE );
+}
+
+}
+void intro_hero_1() {
+////// FUNCTION BODY //////
+{
+arduboy.setCursor( ((WIDTH / 2 | 0 - 30) + 1), HEIGHT / 3 | 0 );
+arduboy.print( "Gunslinger" );
+};
+{
+arduboy.setCursor( (WIDTH / 2 | 0 - 30), HEIGHT / 3 | 0 );
+arduboy.print( "Gunslinger" );
+};
+arduboy.drawBitmap( (WIDTH / 2 | 0 - 30), (HEIGHT / 3 | 0 - 5), gfx_avatar_ola, GFX_AVATAR_OLA_WIDTH, GFX_AVATAR_OLA_HEIGHT, WHITE );
+__translateLib("game.animate([
+    { top: 0 },
+    { top: 3 },
+    { top: 0 },
+    { top: 0 },
+  ], { duration: '1s', 'id': 'ShipBob1', iterations: Infinity })");
+if (__translateLib("game.after('2s')") == 0) {
+  __translateLib("game.animate([
+      { left: 10 },
+      { left: game.width+10 },
+    ], { duration: '.8s', id: 'ShipDash1' })");
+  int h = (5 - (__translateLib("game.animation('ShipDash1')")).__lookup("Identifier>MemberExpression>BinaryExpression>BinaryExpression>BinaryExpression>BinaryExpression>VariableDeclarator>VariableDeclaration>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>remaining") * 5 / 60 | 0);
+  arduboy.fillRect( 0, (HEIGHT / 3 | 0 - 5), (10 + (__translateLib("game.animation('ShipDash1')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), h, BLACK );
+  arduboy.fillRect( 0, (HEIGHT / 3 | 0 - 1), (10 + (__translateLib("game.animation('ShipDash1')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), h, BLACK );
+  arduboy.fillRect( 0, (HEIGHT / 3 | 0 + 3), (10 + (__translateLib("game.animation('ShipDash1')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), h, BLACK );
+  arduboy.drawBitmap( (__translateLib("game.animation('ShipDash1')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left") % WIDTH, (((HEIGHT / 3 + 4) - GFX_SHIP_HEIGHT) + 3), gfx_ship + GFX_SHIP_FRAMESIZE*(0), GFX_SHIP_WIDTH, GFX_SHIP_HEIGHT, WHITE );
+} else {
+  arduboy.drawBitmap( 10, (((HEIGHT / 3 + 4) - GFX_SHIP_HEIGHT) + (__translateLib("game.animation('ShipBob1')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>top")), gfx_ship + GFX_SHIP_FRAMESIZE*(0), GFX_SHIP_WIDTH, GFX_SHIP_HEIGHT, WHITE );
+}
+
+}
+void intro_hero_2() {
+////// FUNCTION BODY //////
+{
+arduboy.setCursor( ((WIDTH / 2 | 0 - 30) + 1), HEIGHT / 3 | 0 );
+arduboy.print( "Warhead" );
+};
+{
+arduboy.setCursor( (WIDTH / 2 | 0 - 30), HEIGHT / 3 | 0 );
+arduboy.print( "Warhead" );
+};
+arduboy.drawBitmap( (WIDTH / 2 | 0 - 30), (HEIGHT / 3 | 0 - 5), gfx_avatar_val, GFX_AVATAR_VAL_WIDTH, GFX_AVATAR_VAL_HEIGHT, WHITE );
+__translateLib("game.animate([
+    { height: 4 },
+    { height: 1 },
+  ], { duration: '.8s', id: 'ShipShutter2' })");
+int h = (__translateLib("game.animation('ShipShutter2')")).__lookup("Identifier>MemberExpression>BinaryExpression>BinaryExpression>BinaryExpression>VariableDeclarator>VariableDeclaration>BlockStatement>FunctionDeclaration>remaining") * 4 / 60 | 0;
+arduboy.fillRect( 30, (HEIGHT / 3 | 0 - 5), (10 + WIDTH), h, BLACK );
+arduboy.fillRect( 30, (HEIGHT / 3 | 0 - 1), (10 + WIDTH), h, BLACK );
+arduboy.fillRect( 30, (HEIGHT / 3 | 0 + 3), (10 + WIDTH), h, BLACK );
+__translateLib("game.animate([
+    { top: 0 },
+    { top: 3 },
+    { top: 0 },
+    { top: 0 },
+  ], { duration: '1s', 'id': 'ShipBob2', iterations: Infinity })");
+if (__translateLib("game.after('2s')") == 0) {
+  __translateLib("game.animate([
+      { left: 10 },
+      { left: game.width+10 },
+    ], { duration: '.7s', id: 'ShipDash2' })");
+  arduboy.fillRect( 0, (HEIGHT / 3 | 0 - 4), (10 + (__translateLib("game.animation('ShipDash2')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), 2, BLACK );
+  arduboy.fillRect( 0, HEIGHT / 3 | 0, (10 + (__translateLib("game.animation('ShipDash2')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), 2, BLACK );
+  arduboy.fillRect( 0, (HEIGHT / 3 | 0 + 3), (10 + (__translateLib("game.animation('ShipDash2')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), 2, BLACK );
+  arduboy.drawBitmap( (__translateLib("game.animation('ShipDash2')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left") % WIDTH, (((HEIGHT / 3 + 4) - GFX_SHIP_HEIGHT) + 3), gfx_ship + GFX_SHIP_FRAMESIZE*(0), GFX_SHIP_WIDTH, GFX_SHIP_HEIGHT, WHITE );
+} else {
+  arduboy.drawBitmap( 10, (((HEIGHT / 3 + 4) - GFX_SHIP_HEIGHT) + (__translateLib("game.animation('ShipBob2')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>top")), gfx_ship + GFX_SHIP_FRAMESIZE*(0), GFX_SHIP_WIDTH, GFX_SHIP_HEIGHT, WHITE );
+}
+
+}
+void intro_hero_3() {
+////// FUNCTION BODY //////
+{
+arduboy.setCursor( ((WIDTH / 2 | 0 - 30) + 1), HEIGHT / 3 | 0 );
+arduboy.print( "Kyd" );
+};
+{
+arduboy.setCursor( (WIDTH / 2 | 0 - 30), HEIGHT / 3 | 0 );
+arduboy.print( "Kyd" );
+};
+arduboy.drawBitmap( (WIDTH / 2 | 0 - 30), (HEIGHT / 3 | 0 - 5), gfx_avatar_ash, GFX_AVATAR_ASH_WIDTH, GFX_AVATAR_ASH_HEIGHT, WHITE );
+__translateLib("game.animate([
+    { height: 4 },
+    { height: 1 },
+  ], { duration: '.8s', id: 'ShipShutter3' })");
+int h = (__translateLib("game.animation('ShipShutter3')")).__lookup("Identifier>MemberExpression>BinaryExpression>BinaryExpression>BinaryExpression>VariableDeclarator>VariableDeclaration>BlockStatement>FunctionDeclaration>remaining") * 4 / 60 | 0;
+arduboy.fillRect( 30, (HEIGHT / 3 | 0 - 5), (10 + WIDTH), h, BLACK );
+arduboy.fillRect( 30, (HEIGHT / 3 | 0 - 1), (10 + WIDTH), h, BLACK );
+arduboy.fillRect( 30, (HEIGHT / 3 | 0 + 3), (10 + WIDTH), h, BLACK );
+__translateLib("game.animate([
+    { top: 0 },
+    { top: 3 },
+    { top: 0 },
+    { top: 0 },
+  ], { duration: '1s', 'id': 'ShipBob3', iterations: Infinity })");
+if (__translateLib("game.after('2s')") == 0) {
+  __translateLib("game.animate([
+      { left: 10 },
+      { left: game.width+10 },
+    ], { duration: '.7s', id: 'ShipDash3' })");
+  arduboy.fillRect( 0, (HEIGHT / 3 | 0 - 4), (10 + (__translateLib("game.animation('ShipDash3')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), 2, BLACK );
+  arduboy.fillRect( 0, HEIGHT / 3 | 0, (10 + (__translateLib("game.animation('ShipDash3')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), 2, BLACK );
+  arduboy.fillRect( 0, (HEIGHT / 3 | 0 + 3), (10 + (__translateLib("game.animation('ShipDash3')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left")), 2, BLACK );
+  arduboy.drawBitmap( (__translateLib("game.animation('ShipDash3')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>left") % WIDTH, (((HEIGHT / 3 + 4) - GFX_SHIP_HEIGHT) + 3), gfx_ship + GFX_SHIP_FRAMESIZE*(0), GFX_SHIP_WIDTH, GFX_SHIP_HEIGHT, WHITE );
+} else {
+  arduboy.drawBitmap( 10, (((HEIGHT / 3 + 4) - GFX_SHIP_HEIGHT) + (__translateLib("game.animation('ShipBob3')")).__lookup("Identifier>MemberExpression>BinaryExpression>CallExpression>ExpressionStatement>BlockStatement>IfStatement>BlockStatement>FunctionDeclaration>top")), gfx_ship + GFX_SHIP_FRAMESIZE*(0), GFX_SHIP_WIDTH, GFX_SHIP_HEIGHT, WHITE );
+}
+
+}
+
+void setup() {
+  _microcanvas_frame_counter = 0;
+
+  // cpuLoad() will only be 0 right after boot
+  if (!arduboy.cpuLoad()) arduboy.begin();
+
+////// CUSTOM SETUP //////
+ix = -GFX_INTERCEPTOR_WIDTH;
+}
+
+void loop() {
+  if (!arduboy.nextFrame()) return;
+
+  ++_microcanvas_frame_counter;
+  if (_microcanvas_frame_counter==60000) _microcanvas_frame_counter = 0;
+
+////// LOOP CONTENTS TO FOLLOW //////
+arduboy.clear();
+if (__translateLib("game.after('2.8s')") !== 0) {
+  intro_hero_1();
+} else if (__translateLib("game.after('2.5s')") !== 0) {
+  intro_hero_2();
+} else if (__translateLib("game.after('2.5s')") !== 0) {
+  intro_hero_3();
+} else {
+  intro_scene();
+}
+////// END OF LOOP CONTENTS //////
+
+  arduboy.display();
+}
