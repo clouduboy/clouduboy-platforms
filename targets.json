@@ -4,5 +4,11 @@
     "target": "arduboy",
     "binpath": ".pioenvs/leonardo/firmware.hex",
     "tarballs": [ "https://github.com/Arduboy/Arduboy/tarball/1.1.1" ]
+  },
+  {
+    "lib": "TinyArcade-1.0",
+    "target": "tiny_arcade",
+    "binpath": "",
+    "tarballs": [ "" ]
   }
 ]
