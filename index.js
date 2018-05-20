@@ -13,8 +13,15 @@ const targets = require('./targets.json').reduce(
 )
 
 
+// Load (optional) config
+let CFG = fs.readJsonSync('./data/config.json', { throws: false }) || {}
+
+
 // TODO: `which pio` check to make sure platformio is installed
-const PIO_BIN = '/usr/bin/pio'
+const PIO_BIN = CFG['pio_bin'] || '/usr/bin/pio'
+// TODO: configurable arduino-builder path
+
+const ARDUINO_PATH = CFG['arduino_path'] || '/opt/arduino'
 
 
 
@@ -26,7 +33,7 @@ function cmdArduinoBuilderCompile(env) {
   // /lib/${env.targetConfig.lib}/buildscript
   const bs = require(path.join(__dirname, '/lib', env.targetConfig.lib,'/buildscript.js'))
 
-  env.arduinodir = '/home/flaki/.arduino15/' // TODO: load from config
+  env.arduinodir = ARDUINO_PATH
   env.sourcefile = env.src
 
   const call = bs(env)
@@ -186,8 +193,7 @@ function getEnv(target, src, builddir) {
 
   // Detect compiler toolchain
   // TODO: auto-detect
-  env.toolchain = 'platformio'
-  env.toolchain = 'arduino_builder'
+  env.toolchain = CFG['use_toolchain'] || 'arduino_builder'
 
   // Use toolchain config of the current target
   env.toolchainConfig = env.targetConfig.toolchain[env.toolchain]

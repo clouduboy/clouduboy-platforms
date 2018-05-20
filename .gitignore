@@ -1,6 +1,5 @@
 node_modules
 .DS_Store
 .pioenvs
-.build
 npm-debug.log
 *.tar.gz
