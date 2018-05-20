@@ -1,17 +1,13 @@
-#include <SPI.h>
-#include <Gamebuino.h>
+#include <Gamebuino-Meta.h>
 
-Gamebuino gb;
-
-void setup(){
+void setup() {
   gb.begin();
-  gb.titleScreen(F("Test"));
-  gb.popup(F("Let's go!"), 100);
-}
+}	
 
-void loop(){
-  if(gb.update()) {
-    gb.display.println(F("Hello World!"));
-  }
+void loop() {
+  while(!gb.update());
+  gb.display.clear();
+  
+  // This is where most of the program takes place
+  gb.display.print("hello, world");
 }
-

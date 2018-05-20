@@ -3,12 +3,40 @@
     "lib": "Arduboy-1.1.1",
     "target": "arduboy",
     "binpath": ".pioenvs/leonardo/firmware.hex",
-    "tarballs": [ "https://github.com/Arduboy/Arduboy/tarball/1.1.1" ]
+    "tarballs": [ "https://github.com/Arduboy/Arduboy/tarball/1.1.1" ],
+    "toolchain": {
+      "platformio": {
+        "hexpath": ".pioenvs/leonardo/firmware.hex"
+      },
+      "arduino_builder": {
+        "hexpath": "%SRC_FILENAME%.hex"
+      }
+    }
   },
   {
     "lib": "TinyArcade-1.0",
     "target": "tiny_arcade",
-    "binpath": "",
-    "tarballs": [ "" ]
+    "binpath": "/deprecated/",
+    "tarballs": [ "TODO" ],
+    "toolchain": {
+      "platformio": {
+        "binpath": ".pioenvs/tinyarcade/firmware.bin"
+      },
+      "arduino_builder": {
+        "binpath": "%SRC_FILENAME%.bin"
+      }
+    }
+  },
+  {
+    "lib": "Gamebuino-META-1.1.0",
+    "target": "gamebuino_meta",
+    "binpath": "/deprecated/",
+    "tarballs": [ "TODO" ],
+    "toolchain": {
+      "platformio": {},
+      "arduino_builder": {
+        "binpath": "%SRC_FILENAME%.bin"
+      }
+    }
   }
 ]
