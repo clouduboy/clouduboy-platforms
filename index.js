@@ -6,15 +6,27 @@ const path = require('path')
 const execa = require('execa')
 
 
+// Paths
+const DATA_PATH = path.join(__dirname, '/data')
+const PLATFORMS_PATH = path.join(__dirname, '/lib')
+
 // Load targets
 const targets = require('./targets.json').reduce(
-  (map, t) => (map, map.set(t.target, t)),
+  (map, t) => {
+    // include libpath
+    t.libpath = path.join(PLATFORMS_PATH, t.lib)
+
+    // Generate map
+    map.set(t.target, t)
+
+    return map
+  },
   new Map()
 )
 
 
 // Load (optional) config
-let CFG = fs.readJsonSync('./data/config.json', { throws: false }) || {}
+let CFG = fs.readJsonSync(path.join(DATA_PATH, '/config.json'), { throws: false }) || {}
 
 
 // TODO: `which pio` check to make sure platformio is installed
@@ -30,8 +42,7 @@ function cmdPioCompile(projectDir) { return `${PIO_BIN} run --disable-auto-clean
 
 // Command to start an arduino-builder compilation
 function cmdArduinoBuilderCompile(env) {
-  // /lib/${env.targetConfig.lib}/buildscript
-  const bs = require(path.join(__dirname, '/lib', env.targetConfig.lib,'/buildscript.js'))
+  const bs = require(path.join(env.targetConfig.libpath, '/buildscript.js'))
 
   env.arduinodir = ARDUINO_PATH
   env.sourcefile = env.src
@@ -54,7 +65,26 @@ module.exports = {
     }
 
     let ext = path.extname(src)
-    src = path.resolve(src)
+
+    // If no builddir specified...
+    if (!builddir) {
+      // we default to the src dir (if it's absolute)
+      if (path.isAbsolute(src)) {
+        builddir = path.dirname(src)
+
+      // or the current working directory if src is a relative path
+      } else {
+        builddir = path.resolve('.')
+      }
+
+    // If a relative builddir is specified resolve it against the current working dir
+    } else if (!path.isAbsolute(builddir)) {
+      builddir = path.resolve(builddir)
+    }
+
+    // We will resolve the path against builddir
+    console.log('resolve', {src}, 'against', {builddir})
+    src = path.resolve(builddir, src)
 
     // It's a folder
     if (!ext) {
@@ -89,8 +119,9 @@ module.exports = {
 if (!module.parent) {
   const cmd = process.argv[2] || 'help',
         platformTarget = process.argv[3],
-        src = process.argv[4],
-        builddir = process.argv[5] || src&&path.dirname(src)
+        // Resolve all passed paths relative to current working directory
+        src = path.resolve(process.argv[4]||''),
+        builddir = path.resolve(process.argv[5]||'')
 
   // Usage
   if (cmd === 'help' || cmd === '--help') {
@@ -164,11 +195,11 @@ function prepareTargetDir(dir, env) {
   let prep = []
 
   // All toolchains
-  prep.push(fs.ensureSymlink(path.join(__dirname, 'lib', env.targetConfig.lib, 'lib'), path.join(dir, 'lib')))
+  prep.push(fs.ensureSymlink(path.join(env.targetConfig.libpath, '/lib'), path.join(dir, 'lib')))
 
   // platformio ini file
   if (env.toolchain === 'platformio') {
-    prep.push(fs.ensureSymlink(path.join(__dirname, 'lib', env.targetConfig.lib, 'platformio.ini'), path.join(dir, 'platformio.ini')))
+    prep.push(fs.ensureSymlink(path.join(env.targetConfig.libpath, '/platformio.ini'), path.join(dir, 'platformio.ini')))
   }
 
   // arduino-builder build directory
@@ -182,6 +213,11 @@ function prepareTargetDir(dir, env) {
 
 // Create compile environment descriptor
 function getEnv(target, src, builddir) {
+  console.log('Building compile ENV for ', { target, src, builddir })
+  if (!builddir) {
+    console.warn('Warning: no `builddir` specified for getEnv()')
+  }
+
   const env = { src }
 
   // Absolute path
